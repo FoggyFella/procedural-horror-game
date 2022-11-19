@@ -9,6 +9,8 @@ export var max_angle = 90
 export var min_angle = -80
 
 onready var head = $Head
+onready var object_look = $Head/ObjectLook
+onready var object_name = $Head/Camera/UI/object_name
 
 var jumping = false
 var look_rot = Vector3.ZERO
@@ -23,6 +25,10 @@ func _ready():
 
 func _physics_process(delta):
 	#set rotation
+	if object_look.is_colliding():
+		object_name.text = str(object_look.get_collider().name)
+	else:
+		object_name.text = "NULL"
 	head.rotation_degrees.x = look_rot.x
 	rotation_degrees.y = look_rot.y
 	if not is_on_floor():

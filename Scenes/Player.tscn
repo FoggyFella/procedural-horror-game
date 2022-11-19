@@ -416,6 +416,15 @@ margin_bottom = 90.5
 texture = ExtResource( 7 )
 expand = true
 
+[node name="object_name" type="Label" parent="Head/Camera/UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 11.0
+margin_top = -20.0
+margin_right = 51.0
+margin_bottom = -6.0
+text = "NULL"
+
 [node name="PlanetShit(gonna move later)" type="Control" parent="Head/Camera"]
 visible = false
 anchor_right = 1.0
@@ -522,6 +531,10 @@ anims/RESET = SubResource( 23 )
 anims/anm = SubResource( 24 )
 anims/breath = SubResource( 25 )
 anims/walk = SubResource( 26 )
+
+[node name="ObjectLook" type="RayCast" parent="Head"]
+enabled = true
+cast_to = Vector3( 0, 0, -5 )
 
 [node name="RayCast" type="RayCast" parent="."]
 enabled = true

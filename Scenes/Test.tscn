@@ -1,9 +1,11 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Assets/Textures/sky_low2.hdr" type="Texture" id=1]
 [ext_resource path="res://Scenes/Player.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Scenes/House_1.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Scripts/RandomPlacement.gd" type="Script" id=4]
 [ext_resource path="res://Scripts/TerrainTest.gd" type="Script" id=5]
+[ext_resource path="res://Scenes/Test_Tree.tscn" type="PackedScene" id=6]
 
 [sub_resource type="PanoramaSky" id=5]
 panorama = ExtResource( 1 )
@@ -93,3 +95,18 @@ anims/idle_sky = SubResource( 8 )
 
 [node name="BrokenHouse_1" parent="." instance=ExtResource( 3 )]
 transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -57.4705, 67.2385, 0 )
+
+[node name="RandomlyPlacedObject" type="Node" parent="."]
+process_priority = 1
+script = ExtResource( 4 )
+object = ExtResource( 6 )
+amount_of_object = 500
+
+[node name="RayCast" type="RayCast" parent="RandomlyPlacedObject"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 70, 0 )
+enabled = true
+cast_to = Vector3( 0, -100, 0 )
+
+[node name="Timer" type="Timer" parent="RandomlyPlacedObject"]
+wait_time = 3.0
+one_shot = true
