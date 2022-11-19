@@ -1,0 +1,95 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://Assets/Textures/sky_low2.hdr" type="Texture" id=1]
+[ext_resource path="res://Scenes/Player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Scenes/House_1.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Scripts/TerrainTest.gd" type="Script" id=5]
+
+[sub_resource type="PanoramaSky" id=5]
+panorama = ExtResource( 1 )
+
+[sub_resource type="Environment" id=6]
+background_mode = 2
+background_sky = SubResource( 5 )
+background_sky_orientation = Basis( 1, 0, 0, 0, -0.866026, 0.5, 0, -0.5, -0.866026 )
+background_energy = 0.8
+ambient_light_color = Color( 0.133333, 0.0901961, 0.0980392, 1 )
+ambient_light_sky_contribution = 0.55
+fog_enabled = true
+fog_color = Color( 0, 0, 0, 1 )
+fog_sun_color = Color( 1, 1, 1, 1 )
+fog_depth_begin = 0.0
+fog_depth_end = 367.9
+fog_depth_curve = 4.14105
+fog_transmit_curve = 1.56917
+fog_height_max = -228.6
+fog_height_curve = 1.86607
+tonemap_mode = 3
+tonemap_exposure = 0.7
+glow_enabled = true
+glow_bicubic_upscale = true
+adjustment_enabled = true
+adjustment_brightness = 0.9
+adjustment_saturation = 0.4
+
+[sub_resource type="Animation" id=7]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldEnvironment:environment:background_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ 0.8 ]
+}
+
+[sub_resource type="Animation" id=8]
+resource_name = "idle_sky"
+length = 10.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldEnvironment:environment:background_energy")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 2.0, 3.7 ]
+}
+
+[node name="Test" type="Spatial"]
+
+[node name="TerrainTest" type="StaticBody" parent="."]
+transform = Transform( 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0 )
+collision_mask = 5
+script = ExtResource( 5 )
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 6 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 1, 0, 0, 0, -0.877657, 0.479289, 0, -0.479289, -0.877657, 0, 0, 0 )
+light_color = Color( 0.94902, 0.411765, 0.411765, 1 )
+light_energy = 2.0
+
+[node name="DirectionalLight2" type="DirectionalLight" parent="."]
+transform = Transform( 0.683236, -0.459271, 0.567679, 0, 0.777431, 0.628968, -0.730198, -0.429733, 0.531169, 0, 0, 0 )
+light_color = Color( 1, 0.827451, 0.886275, 1 )
+light_energy = 0.3
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+autoplay = "idle_sky"
+anims/RESET = SubResource( 7 )
+anims/idle_sky = SubResource( 8 )
+
+[node name="Player" parent="." instance=ExtResource( 2 )]
+
+[node name="BrokenHouse_1" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -57.4705, 67.2385, 0 )

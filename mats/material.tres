@@ -1,0 +1,8 @@
+[gd_resource type="SpatialMaterial" format=2]
+
+[resource]
+albedo_color = Color( 0.286275, 0.0235294, 0.0235294, 1 )
+metallic = 0.18
+roughness = 0.95
+normal_enabled = true
+normal_scale = 6.0

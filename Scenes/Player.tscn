@@ -1,0 +1,536 @@
+[gd_scene load_steps=25 format=2]
+
+[ext_resource path="res://Assets/Textures/CRT Frame.png" type="Texture" id=1]
+[ext_resource path="res://Assets/Textures/sn(j)-19.png" type="Texture" id=2]
+[ext_resource path="res://Assets/Textures/cursor.png" type="Texture" id=3]
+[ext_resource path="res://Assets/Textures/player-icon.png" type="Texture" id=4]
+[ext_resource path="res://Scripts/Playa.gd" type="Script" id=5]
+[ext_resource path="res://Assets/Fony/REAL_ONE1.tres" type="DynamicFontData" id=6]
+[ext_resource path="res://Assets/Textures/light.png" type="Texture" id=7]
+[ext_resource path="res://Assets/Textures/trit.png" type="Texture" id=8]
+
+[sub_resource type="CapsuleShape" id=17]
+
+[sub_resource type="CapsuleMesh" id=18]
+
+[sub_resource type="StyleBoxFlat" id=30]
+bg_color = Color( 0.541176, 0.541176, 0.541176, 1 )
+
+[sub_resource type="Environment" id=27]
+background_mode = 1
+background_color = Color( 0.639216, 0.301961, 0.301961, 1 )
+fog_color = Color( 0, 0, 0, 1 )
+glow_enabled = true
+adjustment_enabled = true
+adjustment_brightness = 0.77
+
+[sub_resource type="Gradient" id=28]
+offsets = PoolRealArray( 0.385475, 1 )
+colors = PoolColorArray( 0, 0, 0, 0, 0, 0, 0, 0.854902 )
+
+[sub_resource type="GradientTexture2D" id=29]
+gradient = SubResource( 28 )
+fill = 1
+fill_from = Vector2( 0.5, 0.5 )
+fill_to = Vector2( 0, 0 )
+
+[sub_resource type="DynamicFont" id=19]
+size = 18
+font_data = ExtResource( 6 )
+
+[sub_resource type="DynamicFont" id=20]
+size = 17
+font_data = ExtResource( 6 )
+
+[sub_resource type="Shader" id=15]
+code = "//SHADER ORIGINALY CREADED BY \"abelcamarena\" FROM SHADERTOY
+//PORTED AND MODIFYED TO GODOT BY AHOPNESS (@ahopness)
+//LICENSE : CC0
+//COMATIBLE WITH : GLES2, GLES3, WEBGL
+//SHADERTOY LINK : https://www.shadertoy.com/view/tsKGDm
+
+shader_type canvas_item;
+
+uniform float SCREEN_WIDTH = 320.; // Lower num - bigger pixels (this will be the screen width)
+uniform float COLOR_FACTOR :hint_range(0., 10.) = 4.;   // Higher num - higher colors quality
+uniform float DITHERING_STRENTH :hint_range(0., .07) = 0.005; // Be carefull with this one, dithering can get messy really easily
+
+int PSXDither(ivec2 fragcoord) {
+    const int dither_table[16] = {
+        -4, +0, -3, +1, 
+        +2, -2, +3, -1, 
+        -3, +1, -4, +0, 
+        +3, -1, +2, -2
+    };
+    
+    int x = fragcoord.x % 4;
+    int y = fragcoord.y % 4;
+    
+    return dither_table[y * 4 + x];
+}
+
+void fragment(){                  
+    // Reduce pixels            
+    vec2 size = SCREEN_WIDTH * SCREEN_PIXEL_SIZE.xy/SCREEN_PIXEL_SIZE.x;
+    vec2 coor = floor( UV * size) ;
+    vec2 uv =  FRAGCOORD.xy / (1.0 / SCREEN_PIXEL_SIZE).xy;
+    
+    // Get source color
+    vec3 col = texture(SCREEN_TEXTURE, uv).xyz;     
+    
+    // Dithering
+    col += float(PSXDither(ivec2(FRAGCOORD.xy))) * DITHERING_STRENTH;
+    
+    // Reduce colors    
+    col = floor(col * COLOR_FACTOR) / COLOR_FACTOR;    
+    
+    // Output to screen
+    COLOR = vec4(col,1.);
+}"
+
+[sub_resource type="ShaderMaterial" id=21]
+shader = SubResource( 15 )
+shader_param/SCREEN_WIDTH = 256.0
+shader_param/COLOR_FACTOR = 10.0
+shader_param/DITHERING_STRENTH = 0.034
+
+[sub_resource type="Shader" id=16]
+code = "//SHADER ORIGINALY CREADED BY \"FMS_Cat\" FROM SHADERTOY
+//PORTED AND MODIFYED TO GODOT BY AHOPNESS (@ahopness)
+//LICENSE : CC0
+//COMATIBLE WITH : GLES2, GLES3
+//SHADERTOY LINK : https://www.shadertoy.com/view/XtBXDt
+
+shader_type canvas_item;
+
+uniform float tape_wave_amount :hint_range (0, .04) = 0.003;
+uniform float tape_crease_amount :hint_range (0, 15) = 2.5;
+uniform float color_displacement :hint_range (0, 5) = 1;
+uniform float lines_velocity :hint_range (0, 5) = 0.1;
+
+const float PI = 3.14159265;
+
+vec3 tex2D( sampler2D _tex, vec2 _p ){
+	vec3 col = texture( _tex, _p ).xyz;
+	if ( 0.5 < abs( _p.x - 0.5 ) ) {
+		col = vec3( 0.1 );
+	}
+	return col;
+}
+
+float hash( vec2 _v ){
+	return fract( sin( dot( _v, vec2( 89.44, 19.36 ) ) ) * 22189.22 );
+}
+
+float iHash( vec2 _v, vec2 _r ){
+	float h00 = hash( vec2( floor( _v * _r + vec2( 0.0, 0.0 ) ) / _r ) );
+	float h10 = hash( vec2( floor( _v * _r + vec2( 1.0, 0.0 ) ) / _r ) );
+	float h01 = hash( vec2( floor( _v * _r + vec2( 0.0, 1.0 ) ) / _r ) );
+	float h11 = hash( vec2( floor( _v * _r + vec2( 1.0, 1.0 ) ) / _r ) );
+	vec2 ip = vec2( smoothstep( vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ), mod( _v*_r, 1. ) ) );
+	return ( h00 * ( 1. - ip.x ) + h10 * ip.x ) * ( 1. - ip.y ) + ( h01 * ( 1. - ip.x ) + h11 * ip.x ) * ip.y;
+}
+
+float noise( vec2 _v ){
+	float sum = 0.;
+	for( float i=1.0; i<9.0; i++ ){
+	sum += iHash( _v + vec2( i ), vec2( 2. * pow( 2., float( i ) ) ) ) / pow( 2., float( i ) );
+	}
+	return sum;
+}
+
+void fragment(){
+	vec2 uv = FRAGCOORD.xy / (1.0 / SCREEN_PIXEL_SIZE).xy;
+	vec2 uvn = uv;
+	vec3 col = vec3( 0.0 );
+	
+	// tape wave
+	uvn.x += ( noise( vec2( uvn.y, TIME ) ) - 0.5 )* 0.005;
+	uvn.x += ( noise( vec2( uvn.y * 100.0, TIME * 10.0 ) ) - 0.5 ) * tape_wave_amount;
+	
+	// tape crease
+	float tcPhase = clamp( ( sin( uvn.y * 8.0 - TIME * PI * 1.2 ) - 0.92 ) * noise( vec2( TIME ) ), 0.0, 0.01 ) * tape_crease_amount;
+	float tcNoise = max( noise( vec2( uvn.y * 100.0, TIME * 10.0 ) ) - 0.5, 0.0 );
+	uvn.x = uvn.x - tcNoise * tcPhase;
+	
+	// switching noise
+	float snPhase = smoothstep( 0.03, 0.0, uvn.y );
+	uvn.y += snPhase * 0.3;
+	uvn.x += snPhase * ( ( noise( vec2( uv.y * 100.0, TIME * 10.0 ) ) - 0.5 ) * 0.2 );
+	
+	col = tex2D( SCREEN_TEXTURE, uvn );
+	col *= 1.0 - tcPhase;
+	col = mix(
+		col,
+		col.yzx,
+		snPhase
+	);
+	
+	// bloom
+	for( float x = -4.0; x < 2.5; x += 1.0 ){
+		col.xyz += vec3(
+		tex2D( SCREEN_TEXTURE, uvn + vec2( x - 0.0, 0.0 ) * 0.007 ).x,
+		tex2D( SCREEN_TEXTURE, uvn + vec2( x - color_displacement, 0.0 ) * 0.007 ).y,
+		tex2D( SCREEN_TEXTURE, uvn + vec2( x - color_displacement * 2.0, 0.0 ) * 0.007 ).z
+		) * 0.1;
+	}
+	col *= 0.6;
+	
+	// ac beat
+	col *= 1.0 + clamp( noise( vec2( 0.0, uv.y + TIME * lines_velocity ) ) * 0.6 - 0.25, 0.0, 0.1 );
+	
+	COLOR = vec4( col, 1.0 );
+}"
+
+[sub_resource type="ShaderMaterial" id=22]
+shader = SubResource( 16 )
+shader_param/tape_wave_amount = 0.001
+shader_param/tape_crease_amount = 0.079
+shader_param/color_displacement = 0.0
+shader_param/lines_velocity = 0.1
+
+[sub_resource type="Animation" id=23]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, -0.541011 ) ]
+}
+
+[sub_resource type="Animation" id=24]
+resource_name = "anm"
+length = 12.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("BackBufferCopy/fxDithering:material:shader_param/DITHERING_STRENTH")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 2, 4, 8, 10, 12 ),
+"transitions": PoolRealArray( 0.4, 0.4, 1, 0.4, 0.4, 1 ),
+"update": 0,
+"values": [ 0.07, 0.0, 0.07, 0.07, 0.0, 0.07 ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("BackBufferCopy/fxDithering:material:shader_param/COLOR_FACTOR")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 4, 6, 8, 10, 12 ),
+"transitions": PoolRealArray( 1, 0.4, 0.4, 0.4, 0.4, 1 ),
+"update": 0,
+"values": [ 10.0, 10.0, 1.0, 10.0, 1.0, 10.0 ]
+}
+
+[sub_resource type="Animation" id=25]
+resource_name = "breath"
+length = 3.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, -0.541011 ), Vector3( 0, -0.087, -0.541 ) ]
+}
+
+[sub_resource type="Animation" id=26]
+resource_name = "walk"
+length = 0.6
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:translation")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.4 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, -0.541011 ), Vector3( 0, 0.0591393, -0.541011 ), Vector3( 0, -0.1, -0.541 ) ]
+}
+
+[node name="Player" type="KinematicBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50, 0 )
+collision_layer = 4
+collision_mask = 11
+script = ExtResource( 5 )
+
+[node name="RemoteTransform" type="RemoteTransform" parent="."]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 94.3174, 0 )
+remote_path = NodePath("../Head/Camera/UI/Map/ViewportContainer/Viewport/Camera")
+update_rotation = false
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, -5.50393e-08, -1.25915, 0, 1, -4.37114e-08, 0, 0, 0 )
+shape = SubResource( 17 )
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, -5.50393e-08, -1.25915, 0, 1, -4.37114e-08, 0, 0, 0 )
+mesh = SubResource( 18 )
+
+[node name="Head" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04885, 0 )
+
+[node name="SpotLight" type="SpotLight" parent="Head"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0 )
+visible = false
+light_color = Color( 0.909804, 0.898039, 0.854902, 1 )
+light_energy = 6.0
+spot_range = 39.5061
+spot_angle = 12.7628
+
+[node name="Camera" type="Camera" parent="Head"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.541011 )
+cull_mask = 1048573
+current = true
+far = 8192.0
+
+[node name="UI" type="Control" parent="Head/Camera"]
+light_mask = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TextureRect" type="TextureRect" parent="Head/Camera/UI"]
+modulate = Color( 0.34902, 0.454902, 0.898039, 1 )
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -16.0
+margin_top = -16.0
+margin_right = 16.0
+margin_bottom = 16.0
+texture = ExtResource( 3 )
+
+[node name="Map" type="Panel" parent="Head/Camera/UI"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -83.5
+margin_top = -73.5
+margin_right = 83.5
+margin_bottom = 73.5
+rect_scale = Vector2( 1.00165, 1 )
+custom_styles/panel = SubResource( 30 )
+
+[node name="ViewportContainer" type="ViewportContainer" parent="Head/Camera/UI/Map"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 1.0
+margin_top = 1.0
+margin_right = -1.0
+margin_bottom = -1.0
+stretch = true
+
+[node name="Viewport" type="Viewport" parent="Head/Camera/UI/Map/ViewportContainer"]
+size = Vector2( 165, 145 )
+handle_input_locally = false
+render_target_update_mode = 0
+
+[node name="Camera" type="Camera" parent="Head/Camera/UI/Map/ViewportContainer/Viewport"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 144.317, 0 )
+environment = SubResource( 27 )
+projection = 1
+fov = 114.4
+size = 300.0
+far = 8192.0
+
+[node name="TextureRect" type="TextureRect" parent="Head/Camera/UI/Map"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 2.0
+margin_top = 2.0
+margin_right = -1.0
+margin_bottom = -1.0
+texture = SubResource( 29 )
+expand = true
+
+[node name="Label" type="Label" parent="Head/Camera/UI/Map"]
+modulate = Color( 1, 1, 1, 0.0941176 )
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -60.5
+margin_top = -19.0
+margin_right = 60.5
+margin_bottom = -3.0
+custom_fonts/font = SubResource( 19 )
+text = "Agent 42-23"
+
+[node name="Label2" type="Label" parent="Head/Camera/UI/Map"]
+modulate = Color( 1, 1, 1, 0.0941176 )
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -60.5
+margin_top = -34.0
+margin_right = 60.5
+margin_bottom = -18.0
+custom_fonts/font = SubResource( 19 )
+text = "property of"
+
+[node name="ColorRect" type="ColorRect" parent="Head/Camera/UI/Map"]
+margin_left = 157.0
+margin_top = -3.0
+margin_right = 167.0
+color = Color( 0.196078, 0.788235, 0.0745098, 1 )
+
+[node name="ColorRect2" type="ColorRect" parent="Head/Camera/UI/Map"]
+margin_left = 157.0
+margin_top = -2.0
+margin_right = 167.0
+color = Color( 0.117647, 0.188235, 0.0470588, 1 )
+
+[node name="light" type="TextureRect" parent="Head/Camera/UI/Map"]
+modulate = Color( 0.709804, 0.294118, 0.294118, 0.4 )
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -109.5
+margin_top = -90.5
+margin_right = 106.5
+margin_bottom = 90.5
+texture = ExtResource( 7 )
+expand = true
+
+[node name="PlanetShit(gonna move later)" type="Control" parent="Head/Camera"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="Head/Camera/PlanetShit(gonna move later)"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 9.0
+margin_top = -41.0
+margin_right = 53.0
+margin_bottom = -25.0
+custom_fonts/font = SubResource( 19 )
+text = "ARES"
+
+[node name="Label3" type="Label" parent="Head/Camera/PlanetShit(gonna move later)"]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 9.0
+margin_top = -24.0
+margin_right = 97.0
+margin_bottom = -8.0
+custom_fonts/font = SubResource( 19 )
+text = "Triticum"
+uppercase = true
+
+[node name="Label2" type="Label" parent="Head/Camera/PlanetShit(gonna move later)"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 10.0
+margin_top = -24.0
+margin_right = 140.0
+margin_bottom = -9.0
+custom_fonts/font = SubResource( 20 )
+text = "MOON:PASITHEA"
+
+[node name="TextureRect2" type="TextureRect" parent="Head/Camera/PlanetShit(gonna move later)"]
+modulate = Color( 0.74902, 0.466667, 0.466667, 1 )
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -150.0
+margin_top = -150.0
+margin_right = 150.0
+margin_bottom = 150.0
+texture = ExtResource( 2 )
+
+[node name="TextureRect3" type="TextureRect" parent="Head/Camera/PlanetShit(gonna move later)"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -150.0
+margin_top = -150.0
+margin_right = 150.0
+margin_bottom = 150.0
+texture = ExtResource( 8 )
+
+[node name="BackBufferCopy" type="BackBufferCopy" parent="Head/Camera"]
+position = Vector2( 128.5, 108.5 )
+scale = Vector2( 1.385, 1.225 )
+copy_mode = 2
+
+[node name="fxDithering" type="ColorRect" parent="Head/Camera/BackBufferCopy"]
+modulate = Color( 1, 1, 1, 0.34902 )
+material = SubResource( 21 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -100.0
+margin_top = -100.0
+margin_right = -100.0
+margin_bottom = -100.0
+
+[node name="BackBufferCopy2" type="BackBufferCopy" parent="Head/Camera"]
+position = Vector2( 128.5, 112.5 )
+scale = Vector2( 1.335, 1.145 )
+copy_mode = 2
+
+[node name="VHS" type="ColorRect" parent="Head/Camera/BackBufferCopy2"]
+material = SubResource( 22 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -100.0
+margin_top = -100.0
+margin_right = -100.0
+margin_bottom = -100.0
+
+[node name="Frame" type="Control" parent="Head/Camera"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="CRT Frame" type="TextureRect" parent="Head/Camera/Frame"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 1 )
+expand = true
+
+[node name="animationplaya" type="AnimationPlayer" parent="Head/Camera"]
+autoplay = "breath"
+anims/RESET = SubResource( 23 )
+anims/anm = SubResource( 24 )
+anims/breath = SubResource( 25 )
+anims/walk = SubResource( 26 )
+
+[node name="RayCast" type="RayCast" parent="."]
+enabled = true
+cast_to = Vector3( 0, -100, 0 )
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform( 119.725, 0, 0, 0, -5.23334e-06, 119.725, 0, -119.725, -5.23334e-06, 0, 2.19337, 0 )
+layers = 2
+modulate = Color( 0.184314, 0.615686, 1, 1 )
+double_sided = false
+no_depth_test = true
+texture = ExtResource( 4 )
