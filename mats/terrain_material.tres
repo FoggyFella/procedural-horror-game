@@ -1,0 +1,36 @@
+[gd_resource type="SpatialMaterial" load_steps=5 format=2]
+
+[ext_resource path="res://addons/silicon.vfx.tilebreaker/spatial_tile_breaker.gd" type="Script" id=1]
+[ext_resource path="res://Assets/Textures/TexturesCom_MarbleVeined0001_1_seamless_S.png" type="Texture" id=2]
+
+[sub_resource type="OpenSimplexNoise" id=14]
+seed = 131
+period = 124.8
+lacunarity = 0.76
+
+[sub_resource type="NoiseTexture" id=15]
+flags = 3
+seamless = true
+as_normalmap = true
+bump_strength = 11.4
+noise = SubResource( 14 )
+
+[resource]
+params_specular_mode = 4
+albedo_color = Color( 0.984314, 0.984314, 0.984314, 1 )
+albedo_texture = ExtResource( 2 )
+normal_enabled = true
+normal_scale = -9.83
+normal_texture = SubResource( 15 )
+uv1_scale = Vector3( 30, 30, 10 )
+script = ExtResource( 1 )
+__meta__ = {
+"_tile_breaker_cleanup": Object(Reference,"script":Resource( "res://addons/silicon.vfx.tilebreaker/tile_breaker_cleanup.gd" ),"adjusted_shader":[  ],"material":null)
+
+}
+uv1_break_tiling = true
+uv1_random_rotation = 127.156
+uv1_blending = 0.11
+uv2_break_tiling = false
+uv2_random_rotation = 180.0
+uv2_blending = 0.4

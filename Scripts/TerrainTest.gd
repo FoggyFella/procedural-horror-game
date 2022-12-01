@@ -63,24 +63,6 @@ func _ready():
 		var thing_inst = thing.instance()
 		thing_inst.translation = Vector3(vertex.x,vertex.y + 1,vertex.z)
 		add_child(thing_inst)
-	var trees = 0
-	while trees < 500:
-		trees += 1
-		var numbah = rand_range(0,data_tool.get_vertex_count())
-		var vertex = data_tool.get_vertex(numbah)
-		var tree_inst = tree.instance()
-		tree_inst.translation = Vector3(vertex.x,vertex.y - 1,vertex.z)
-		add_child(tree_inst)
-	emit_signal("trees_placed")
-	var houses = 0
-	while houses < 10:
-		houses += 1
-		var numbah = rand_range(0,data_tool.get_vertex_count())
-		var vertex = data_tool.get_vertex(numbah)
-		var house_inst = house_1.instance()
-		house_inst.translation = Vector3(vertex.x,vertex.y + 15,vertex.z)
-		add_child(house_inst)
-		
 	data_tool.commit_to_surface(array_mesh)
 	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface_tool.add_smooth_group(true)
@@ -93,5 +75,6 @@ func _ready():
 	mesh_inst.create_trimesh_collision()
 	mat.albedo_texture = noise_tex
 	mat.normal_texture = noise_normal
-	
+	mesh_inst.name = "TerrainMesh"
+	mesh_inst.get_child(0).name = "Terrain"
 	add_child(mesh_inst)
